@@ -1,0 +1,424 @@
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>دليل Astro.js التفاعلي</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+        <!-- Chosen Palette: Slate -->
+        <!-- Application Structure Plan: An interactive single-page application with a fixed sidebar for navigation and a dynamic content area. This structure is chosen over a linear document because it allows the developer to quickly jump to any section of the guide, making it an efficient reference tool. The non-linear access is ideal for learning and for quickly finding specific information without scrolling. -->
+        <!-- Visualization & Content Choices: 
+            - Getting Started -> Code blocks with "copy" buttons -> Makes it easy for the developer to execute commands. Goal: Inform/Action. Library: Vanilla JS.
+            - File Structure -> Interactive diagram built with HTML/Tailwind -> Visually represents the project structure, which is more intuitive than a text list. Goal: Organize/Inform.
+            - Routing/Dynamic Pages -> Annotated code examples and visual flow diagrams (HTML/CSS) -> Breaks down complex concepts into understandable parts. Goal: Teach/Inform.
+            - All key concepts from the source document are represented as distinct, navigable sections for clarity and ease of access.
+            - All content is pre-loaded and displayed using JS, confirming a true SPA experience without reloads.
+        -->
+        <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+        <style>
+            body {
+                font-family: 'Tajawal', sans-serif;
+            }
+            .content-section {
+                display: none;
+            }
+            .content-section.active {
+                display: block;
+                animation: fadeIn 0.5s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .nav-link.active {
+                background-color: #475569; /* slate-600 */
+                color: white;
+            }
+            .code-block {
+                position: relative;
+                background-color: #1e293b; /* slate-800 */
+                color: #e2e8f0; /* slate-200 */
+                border-radius: 0.5rem;
+                padding: 1rem;
+                padding-top: 2.5rem;
+                overflow-x: auto;
+                direction: ltr;
+                text-align: left;
+            }
+            .copy-btn {
+                position: absolute;
+                top: 0.5rem;
+                right: 0.5rem;
+                background-color: #475569; /* slate-600 */
+                color: white;
+                border: none;
+                padding: 0.25rem 0.5rem;
+                border-radius: 0.25rem;
+                cursor: pointer;
+                font-size: 0.8rem;
+            }
+            .copy-btn:hover {
+                background-color: #64748b; /* slate-500 */
+            }
+            .file-tree {
+                direction: ltr;
+            }
+            .file-tree ul {
+                padding-left: 1.5rem;
+                border-left: 1px solid #475569;
+            }
+            .file-tree li {
+                position: relative;
+                padding-left: 1rem;
+                margin-top: 0.5rem;
+            }
+            .file-tree li::before {
+                content: '';
+                position: absolute;
+                top: 0.8rem;
+                left: 0;
+                border-top: 1px solid #475569;
+                width: 0.75rem;
+                height: 1px;
+            }
+            .file-tree li:last-child::after {
+                content: '';
+                position: absolute;
+                top: 0.8rem;
+                left: 0;
+                bottom: 0;
+                border-left: 1px solid #f1f5f9; /* slate-100 to hide the line */
+                width: 1px;
+                height: auto;
+            }
+        </style>
+    </head>
+    <body class="bg-slate-100 text-slate-800">
+
+        <div class="flex h-screen">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="w-72 bg-slate-800 text-slate-100 p-4 transition-transform transform translate-x-full md:translate-x-0 overflow-y-auto">
+                <h1 class="text-2xl font-bold mb-6">دليل Astro.js</h1>
+                <nav id="main-nav">
+                    <ul class="space-y-1">
+                        <li><a href="#getting-started" class="nav-link block py-2 px-4 rounded transition-colors duration-200 hover:bg-slate-700">1. بدء التشغيل</a></li>
+                        <li><a href="#file-structure" class="nav-link block py-2 px-4 rounded transition-colors duration-200 hover:bg-slate-700">2. هيكل الملفات</a></li>
+                        <li><a href="#routing" class="nav-link block py-2 px-4 rounded transition-colors duration-200 hover:bg-slate-700">3. نظام التوجيه</a></li>
+                        <li><a href="#dynamic-pages" class="nav-link block py-2 px-4 rounded transition-colors duration-200 hover:bg-slate-700">4. الصفحات الديناميكية</a></li>
+                        <li><a href="#interactivity" class="nav-link block py-2 px-4 rounded transition-colors duration-200 hover:bg-slate-700">5. إضافة التفاعلية</a></li>
+                        <li><a href="#styling" class="nav-link block py-2 px-4 rounded transition-colors duration-200 hover:bg-slate-700">6. إدارة التنسيقات</a></li>
+                        <li><a href="#env-variables" class="nav-link block py-2 px-4 rounded transition-colors duration-200 hover:bg-slate-700">7. متغيرات البيئة</a></li>
+                        <li><a href="#authentication" class="nav-link block py-2 px-4 rounded transition-colors duration-200 hover:bg-slate-700">8. نظام المصادقة</a></li>
+                        <li><a href="#middleware" class="nav-link block py-2 px-4 rounded transition-colors duration-200 hover:bg-slate-700">9. البرامج الوسيطة</a></li>
+                        <li><a href="#code-organization" class="nav-link block py-2 px-4 rounded transition-colors duration-200 hover:bg-slate-700">10. تنظيم الكود</a></li>
+                        <li><a href="#deployment" class="nav-link block py-2 px-4 rounded transition-colors duration-200 hover:bg-slate-700">11. النشر والـ Build</a></li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+                <button id="menu-toggle" class="md:hidden mb-4 p-2 rounded bg-slate-800 text-white fixed top-4 left-4 z-20">
+                    القائمة
+                </button>
+
+                <!-- Section: Getting Started -->
+                <section id="getting-started" class="content-section space-y-6">
+                    <h2 class="text-3xl font-bold border-b-4 border-indigo-500 pb-2 mb-4">🚀 1. بدء تشغيل المشروع</h2>
+                    <p class="text-lg text-slate-600">لبدء العمل ورؤية الموقع محليًا على جهازك، اتبع الخطوات التالية:</p>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-2">الخطوة 1: تثبيت الحزم</h3>
+                        <p class="mb-3">افتح الطرفية (Terminal) وقم بتشغيل الأمر التالي لتثبيت جميع الاعتماديات.</p>
+                        <div class="code-block"><button class="copy-btn">نسخ</button><pre><code>npm install</code></pre></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-2">الخطوة 2: تشغيل خادم التطوير</h3>
+                        <p class="mb-3">بعد انتهاء التثبيت، قم بتشغيل الأمر التالي لبدء الخادم المحلي.</p>
+                        <div class="code-block"><button class="copy-btn">نسخ</button><pre><code>npm run dev</code></pre></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-2">الخطوة 3: فتح المشروع</h3>
+                        <p class="mb-3">سيقوم الخادم بعرض رابط في الطرفية، غالبًا <code class="bg-slate-200 px-1 rounded">http://localhost:4321</code>. افتحه في متصفحك.</p>
+                    </div>
+                </section>
+
+                <!-- Section: File Structure -->
+                <section id="file-structure" class="content-section">
+                    <h2 class="text-3xl font-bold border-b-4 border-indigo-500 pb-2 mb-4">📁 2. شرح بنية وهيكل الملفات</h2>
+                    <p class="mb-6 text-lg text-slate-600">ستجد معظم عملك داخل مجلد `src`. إليك شرح مرئي للمجلدات الرئيسية:</p>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="file-tree">
+                            <ul>
+                                <li><span>📁 src</span>
+                                    <ul>
+                                        <li>📁 api <span class="text-sm text-slate-500 mr-2">- لكل ما يتعلق بالتواصل مع الخادم.</span></li>
+                                        <li>📁 components <span class="text-sm text-slate-500 mr-2">- للمكونات الصغيرة القابلة لإعادة الاستخدام.</span></li>
+                                        <li>📁 layouts <span class="text-sm text-slate-500 mr-2">- لتخطيطات الصفحات المشتركة (Header/Footer).</span></li>
+                                        <li>📁 middleware <span class="text-sm text-slate-500 mr-2">- لوضع كود يتم تنفيذه قبل عرض كل صفحة.</span></li>
+                                        <li>📁 pages <span class="text-sm text-slate-500 mr-2">- لإدارة صفحات الموقع وروابطها (Routing).</span></li>
+                                        <li>📁 styles <span class="text-sm text-slate-500 mr-2">- لملفات CSS العامة.</span></li>
+                                        <li>📁 utils <span class="text-sm text-slate-500 mr-2">- للدوال المساعدة العامة.</span></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Section: Routing -->
+                <section id="routing" class="content-section">
+                    <h2 class="text-3xl font-bold border-b-4 border-indigo-500 pb-2 mb-4">🗺️ 3. نظام التوجيه (Routing)</h2>
+                    <p class="mb-6 text-lg text-slate-600">نظام التوجيه في Astro يعتمد على الملفات. اسم ومكان الملف داخل `src/pages` يحدد رابط الـ URL الخاص به.</p>
+                    <div class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded"><code class="text-md text-slate-700" style="direction: ltr;">src/pages/index.astro</code><span class="text-2xl mx-4">➡️</span><code class="text-md font-bold text-indigo-600">/</code></div>
+                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded"><code class="text-md text-slate-700" style="direction: ltr;">src/pages/about.astro</code><span class="text-2xl mx-4">➡️</span><code class="text-md font-bold text-indigo-600">/about</code></div>
+                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded"><code class="text-md text-slate-700" style="direction: ltr;">src/pages/blog/post-1.astro</code><span class="text-2xl mx-4">➡️</span><code class="text-md font-bold text-indigo-600">/blog/post-1</code></div>
+                    </div>
+                    <h3 class="text-2xl font-bold mt-8 mb-4">كيفية إضافة صفحة جديدة</h3>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <ol class="list-decimal list-inside space-y-2">
+                            <li>اذهب إلى مجلد `src/pages`.</li>
+                            <li>أنشئ ملفًا جديدًا بامتداد `.astro` (مثلاً: `contact.astro`).</li>
+                            <li>اكتب كود HTML أو مكونات Astro داخل هذا الملف.</li>
+                            <li>هذا كل شيء! يمكنك الآن زيارة الرابط `/contact` وسترى صفحتك الجديدة.</li>
+                        </ol>
+                    </div>
+                </section>
+
+                <!-- Section: Dynamic Pages -->
+                <section id="dynamic-pages" class="content-section">
+                    <h2 class="text-3xl font-bold border-b-4 border-indigo-500 pb-2 mb-4">✨ 4. الصفحات الديناميكية</h2>
+                    <p class="mb-6 text-lg text-slate-600">لإنشاء صفحات بناءً على بيانات متغيرة (مثل صفحات المنتجات)، نستخدم ملفًا باسم بين قوسين مربعين، مثل `[id].astro`. داخل هذا الملف، نستخدم دالة `getStaticPaths` لإخبار Astro بالصفحات التي يجب إنشاؤها.</p>
+                    <div class="code-block"><button class="copy-btn">نسخ</button><pre><code>// src/pages/products/[id].astro
+    ---
+    export async function getStaticPaths() {
+    // Here we would fetch products from an API
+    const products = [
+        {id: '1', name: 'Product 1'}, 
+        {id: '2', name: 'Product 2'}
+    ];
+
+    return products.map(product => ({
+        params: { id: product.id }, // Determines the value of [id] in the URL
+        props: { product }          // Data to pass to the page
+    }));
+    }
+
+    const { id } = Astro.params;
+    const { product } = Astro.props;
+    ---
+    &lt;h1&gt;{product.name}&lt;/h1&gt;
+    &lt;p&gt;Product ID is: {id}&lt;/p&gt;
+    </code></pre></div>
+                </section>
+                
+                <!-- Section: Interactivity -->
+                <section id="interactivity" class="content-section space-y-8">
+                    <h2 class="text-3xl font-bold border-b-4 border-indigo-500 pb-2 mb-4">🎮 5. إضافة التفاعلية</h2>
+                    <p class="text-lg text-slate-600">بشكل افتراضي، Astro يزيل كل الـ JavaScript غير الضروري. لإضافة التفاعلية، لديك خياران:</p>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-2">1. أكواد JavaScript العادية</h3>
+                        <div class="code-block"><button class="copy-btn">نسخ</button><pre><code>&lt;h1&gt;Hello World&lt;/h1&gt;
+
+    &lt;script&gt;
+    // This code will run in the browser
+    console.log('Page loaded!');
+    &lt;/script&gt;
+    </code></pre></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-2">2. استخدام مكونات (React/Vue/Svelte)</h3>
+                        <p class="mb-3">Astro يسمح لك بدمج مكونات من أطر عمل أخرى باستخدام "Astro Islands". لتفعيل مكون، أضف له خاصية `client:*`.</p>
+                        <div class="code-block"><button class="copy-btn">نسخ</button><pre><code>---
+    import MyReactCounter from '../components/MyReactCounter.jsx';
+    ---
+    &lt;h1&gt;مكون تفاعلي&lt;/h1&gt;
+    &lt;!-- This component will load when it becomes visible on the page --&gt;
+    &lt;MyReactCounter client:visible /&gt;
+    </code></pre></div>
+                    </div>
+                </section>
+
+                <!-- Section: Styling -->
+                <section id="styling" class="content-section space-y-8">
+                    <h2 class="text-3xl font-bold border-b-4 border-indigo-500 pb-2 mb-4">🎨 6. إدارة التنسيقات (Styling)</h2>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-2">تنسيق مخصص للمكون (Scoped)</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-2">تنسيق عام (Global)</h3>
+                        <p class="mb-3">لإضافة تنسيقات تطبق على الموقع بالكامل، أنشئ ملف CSS (مثلاً `src/styles/global.css`) وقم باستيراده في ملف الـ Layout الرئيسي.</p>
+                    </div>
+                </section>
+                
+                <!-- Section: Environment Variables -->
+                <section id="env-variables" class="content-section">
+                    <h2 class="text-3xl font-bold border-b-4 border-indigo-500 pb-2 mb-4">🔑 7. متغيرات البيئة (.env)</h2>
+                    <p class="mb-6 text-lg text-slate-600">لإدارة المفاتيح السرية (API Keys) والإعدادات بأمان، استخدم ملف `.env` في جذر المشروع. المتغيرات التي تبدأ بـ `PUBLIC_` تكون متاحة في كود العميل (المتصفح).</p>
+                    <div class="code-block"><button class="copy-btn">نسخ</button><pre><code># .env file
+
+    # This variable is secret and only available on the server
+    SECRET_API_KEY=your_secret_key_here
+
+    # This variable is public and available in the browser
+    PUBLIC_SITE_NAME="My Awesome Site"
+    </code></pre></div>
+                    <p class="mt-4 text-lg text-slate-600">يمكنك الوصول إليها في الكود باستخدام <code class="bg-slate-200 px-1 rounded" style="direction: ltr;">import.meta.env</code>.</p>
+                </section>
+
+                <!-- Section: Authentication -->
+                <section id="authentication" class="content-section">
+                    <h2 class="text-3xl font-bold border-b-4 border-indigo-500 pb-2 mb-4">🔒 8. نظام المصادقة</h2>
+                    <p class="mb-6 text-lg text-slate-600">نستخدم مكتبة **Auth.js** للتعامل مع تسجيل الدخول. يتم إعداد طرق الدخول (مثل Google أو اسم المستخدم وكلمة السر) في ملف الإعدادات `auth.config.ts`.</p>
+                    <div class="code-block"><button class="copy-btn">نسخ</button><pre><code>// auth.config.ts
+    import Google from "@auth/core/providers/google";
+    import Credentials from "@auth/core/providers/credentials";
+
+    export default {
+    providers: [
+        Google({
+        clientId: import.meta.env.GOOGLE_CLIENT_ID,
+        clientSecret: import.meta.env.GOOGLE_CLIENT_SECRET,
+        }),
+        Credentials({
+        // Here you put the logic to verify the username and password by communicating with the API
+        async authorize(credentials) {
+            // const user = await api.login(credentials.email, credentials.password);
+            // if (user) return user;
+            return null; // On sign in failure
+        },
+        }),
+    ],
+    };</code></pre></div>
+                </section>
+
+                <!-- Section: Middleware -->
+                <section id="middleware" class="content-section">
+                    <h2 class="text-3xl font-bold border-b-4 border-indigo-500 pb-2 mb-4">🛡️ 9. البرامج الوسيطة (Middleware)</h2>
+                    <p class="mb-6 text-lg text-slate-600">الـ Middleware هو كود يتم تنفيذه **قبل** عرض الصفحة عند كل طلب. يُستخدم لأمور مثل حماية الصفحات أو تعديل البيانات. أنشئ ملفًا باسم `src/middleware.ts` لوضع هذا المنطق.</p>
+                    <div class="code-block"><button class="copy-btn">نسخ</button><pre><code>// src/middleware.ts
+    import { defineMiddleware } from "astro:middleware";
+    import { getSession } from "auth-astro/server";
+
+    export const onRequest = defineMiddleware(async (context, next) => {
+    const session = await getSession(context.request);
+
+    // If a non-logged-in user tries to access the dashboard
+    if (context.url.pathname.startsWith("/dashboard") && !session) {
+        // Redirect them to the login page
+        return context.redirect("/login");
+    }
+
+    // Allow the request to proceed if conditions don't apply
+    return next();
+    });
+    </code></pre></div>
+                </section>
+
+                <!-- Section: Code Organization -->
+                <section id="code-organization" class="content-section">
+                    <h2 class="text-3xl font-bold border-b-4 border-indigo-500 pb-2 mb-4">📦 10. تنظيم الكود الإضافي</h2>
+                    <p class="mb-6 text-lg text-slate-600">للحفاظ على المشروع منظمًا، نستخدم مجلدات إضافية:</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <h3 class="text-xl font-bold mb-2">📁 `src/utils`</h3>
+                            <p>للدوال المساعدة التي يمكن استخدامها في أماكن متعددة.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <h3 class="text-xl font-bold mb-2">📁 `src/api`</h3>
+                            <p>لكل ما يتعلق بالتواصل مع الخادم (Backend API).</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Section: Deployment -->
+                <section id="deployment" class="content-section">
+                    <h2 class="text-3xl font-bold border-b-4 border-indigo-500 pb-2 mb-4">🌍 11. النشر والـ Build</h2>
+                    <p class="mb-6 text-lg text-slate-600">عندما يكون الموقع جاهزًا للنشر، تحتاج إلى بناء النسخة النهائية منه عبر تشغيل الأمر:</p>
+                    <div class="code-block"><button class="copy-btn">نسخ</button><pre><code>npm run build</code></pre></div>
+                    <p class="mt-4 p-4 bg-slate-200 rounded-lg">هذا الأمر سيقوم بإنشاء مجلد جديد باسم `dist`. هذا المجلد يحتوي على كل ملفات HTML, CSS, JS النهائية والمحسّنة التي يمكنك رفعها إلى أي استضافة.</p>
+                </section>
+
+            </main>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const navLinks = document.querySelectorAll('.nav-link');
+                const contentSections = document.querySelectorAll('.content-section');
+                const menuToggle = document.getElementById('menu-toggle');
+                const sidebar = document.getElementById('sidebar');
+
+                function showContent(hash) {
+                    const defaultHash = navLinks.length > 0 ? navLinks[0].getAttribute('href') : '';
+                    let targetId = hash;
+
+                    if (!targetId || !document.querySelector(targetId)) {
+                        targetId = defaultHash;
+                    }
+                    
+                    if (!targetId) return;
+
+                    contentSections.forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                    });
+
+                    document.querySelector(targetId).classList.add('active');
+                    const activeLink = document.querySelector(`a.nav-link[href="${targetId}"]`);
+                    if (activeLink) {
+                        activeLink.classList.add('active');
+                    }
+                }
+
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const targetId = this.getAttribute('href');
+                        
+                        if (window.location.hash !== targetId) {
+                            history.pushState(null, null, targetId);
+                        }
+                        
+                        showContent(targetId);
+
+                        if (window.innerWidth < 768) {
+                            sidebar.classList.add('translate-x-full');
+                            sidebar.classList.remove('md:translate-x-0');
+                        }
+                    });
+                });
+                
+                window.addEventListener('popstate', function () {
+                    showContent(window.location.hash);
+                });
+
+                document.querySelectorAll('.copy-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const codeBlock = this.closest('.code-block');
+                        const code = codeBlock.querySelector('pre code').innerText;
+                        navigator.clipboard.writeText(code).then(() => {
+                            this.innerText = 'تم النسخ!';
+                            setTimeout(() => { this.innerText = 'نسخ'; }, 2000);
+                        }).catch(err => {
+                            console.error('Failed to copy code: ', err);
+                        });
+                    });
+                });
+
+                menuToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('translate-x-full');
+                    sidebar.classList.toggle('md:translate-x-0');
+                });
+
+                // Show initial content based on the hash or default
+                showContent(window.location.hash);
+            });
+        </script>
+    </body>
+    </html>
